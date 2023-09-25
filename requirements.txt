@@ -1,0 +1,6 @@
+View student ID, name, course, phone number
+Insert new records
+Update records
+Delete records
+Search records
+Sort records
