@@ -1,5 +1,6 @@
 import sys
 import sqlite3
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QGridLayout, QLabel, QWidget,\
     QLineEdit, QPushButton, QMainWindow, QTableWidget, QTableWidgetItem, QDialog, QVBoxLayout,\
     QComboBox
@@ -14,6 +15,8 @@ class MainWindow(QMainWindow):
         #Top nav bar
         file_menu_item = self.menuBar().addMenu("&File")
         help_menu_item = self.menuBar().addMenu("&Help")
+        edit_menu_item = self.menuBar().addMenu("&Edit")
+
 
         #Sub items
         add_student_action = QAction("Add Student",self)
@@ -22,6 +25,10 @@ class MainWindow(QMainWindow):
 
         about_action = QAction("About", self)
         help_menu_item.addAction(about_action)
+
+        search_name = QAction("Search", self)
+        edit_menu_item.addAction(search_name)
+        search_name.triggered.connect(self.search)
 
 
         #Table
@@ -50,6 +57,9 @@ class MainWindow(QMainWindow):
         dialog = InsertDialog()
         dialog.exec()
 
+    def search(self):
+        dialog = SearchDialog()
+        dialog.exec()
 
 
 class InsertDialog(QDialog):
@@ -82,9 +92,7 @@ class InsertDialog(QDialog):
         button.clicked.connect(self.add_student)
         layout.addWidget(button)
 
-
         self.setLayout(layout)
-
 
     def add_student(self):
         name = self.student_name.text()
@@ -99,9 +107,42 @@ class InsertDialog(QDialog):
         cursor.close()
         connection.close()
 
-        student_mng.load_data()
+        student_mng.load_data() #Reload data table showing update (new student)
 
 
+class SearchDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Search Student")
+        self.setFixedWidth(300)
+        self.setFixedHeight(300)
+
+        layout = QVBoxLayout()
+
+        #Add Phone
+        self.search_student = QLineEdit()
+        self.search_student.setPlaceholderText("Name")
+        layout.addWidget(self.search_student)
+
+        #Submit button
+        button = QPushButton("Search")
+        button.clicked.connect(self.search_name)
+        layout.addWidget(button)
+
+        self.setLayout(layout)
+
+    def search_name(self):
+        name = self.search_student.text()
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+        result = cursor.execute("SELECT * FROM student WHERE name = ?" (name,))
+        rows = list(result)
+        items = student_mng.table.findItems(name, Qt.MatchFlag.MatchFixedString)
+        for item in items:
+            student_mng.table.item(item.row(),1).setSelected(True)
+
+        cursor.close()
+        connection.close()
 
 
 
