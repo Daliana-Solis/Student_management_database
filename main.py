@@ -26,6 +26,8 @@ class MainWindow(QMainWindow):
 
         about_action = QAction("About", self)
         help_menu_item.addAction(about_action)
+        about_action.triggered.connect(self.about)
+
 
         search_name = QAction(QIcon("icons/search.png"),"Search", self)
         edit_menu_item.addAction(search_name)
@@ -69,7 +71,6 @@ class MainWindow(QMainWindow):
         self.statusbar.addWidget(edit_button)
         self.statusbar.addWidget(delete_button)
 
-
     def load_data(self):
         #Connect with sql database
         connection = sqlite3.connect("database.db")
@@ -81,7 +82,6 @@ class MainWindow(QMainWindow):
             for colmn_num, data in enumerate(row_data):
                 self.table.setItem(row_num, colmn_num, QTableWidgetItem(str(data)))
         connection.close()
-
 
     def insert(self):
         dialog = InsertDialog()
@@ -97,6 +97,10 @@ class MainWindow(QMainWindow):
 
     def delete(self):
         dialog = DeleteDialog()
+        dialog.exec()
+
+    def about(selfs):
+        dialog = AboutDialog()
         dialog.exec()
 
 
@@ -173,11 +177,11 @@ class SearchDialog(QDialog):
         name = self.search_student.text()
         connection = sqlite3.connect("database.db")
         cursor = connection.cursor()
-        result = cursor.execute("SELECT * FROM student WHERE name = ?", (name,))
+        result = cursor.execute("SELECT * FROM students WHERE name = ?", (name,))
         rows = list(result)
         items = student_mng.table.findItems(name, Qt.MatchFlag.MatchFixedString)
         for item in items:
-            student_mng.table.item(item.row(),1).setSelected(True)
+            student_mng.table.item(item.row(), 1).setSelected(True)
 
         cursor.close()
         connection.close()
@@ -271,7 +275,6 @@ class DeleteDialog(QDialog):
         cursor.execute("DELETE FROM students WHERE id = ?", (student_id,))
         connection.commit()
         cursor.close()
-        connection
 
         student_mng.load_data()
         self.close() #closes pop-up window
@@ -281,6 +284,13 @@ class DeleteDialog(QDialog):
         confirmation_widget.setText("The record was deleted successfully")
         confirmation_widget.exec()
 
+
+class AboutDialog(QMessageBox):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("About")
+        content = """App created during Python course"""
+        self.setText(content)
 
 
 
