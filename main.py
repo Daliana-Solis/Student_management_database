@@ -1,7 +1,8 @@
 import sys
 import sqlite3
 from PyQt6.QtWidgets import QApplication, QGridLayout, QLabel, QWidget,\
-    QLineEdit, QPushButton, QMainWindow, QTableWidget, QTableWidgetItem
+    QLineEdit, QPushButton, QMainWindow, QTableWidget, QTableWidgetItem, QDialog, QVBoxLayout,\
+    QComboBox
 from PyQt6.QtGui import QAction
 
 
@@ -16,6 +17,7 @@ class MainWindow(QMainWindow):
 
         #Sub items
         add_student_action = QAction("Add Student",self)
+        add_student_action.triggered.connect(self.insert)
         file_menu_item.addAction(add_student_action)
 
         about_action = QAction("About", self)
@@ -42,6 +44,64 @@ class MainWindow(QMainWindow):
             for colmn_num, data in enumerate(row_data):
                 self.table.setItem(row_num, colmn_num, QTableWidgetItem(str(data)))
         connection.close()
+
+
+    def insert(self):
+        dialog = InsertDialog()
+        dialog.exec()
+
+
+
+class InsertDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Insert Student Data")
+        self.setFixedWidth(300)
+        self.setFixedHeight(300)
+
+        layout = QVBoxLayout()
+
+        #Name Widget
+        self.student_name = QLineEdit()
+        self.student_name.setPlaceholderText("Name")
+        layout.addWidget(self.student_name)
+
+        #Course Widget
+        self.course_name = QComboBox()
+        courses = ["Biology", 'Math', "Astronomy", "Physics"]
+        self.course_name.addItems(courses)
+        layout.addWidget(self.course_name)
+
+        #Add Phone
+        self.mobile = QLineEdit()
+        self.mobile.setPlaceholderText("Mobile")
+        layout.addWidget(self.mobile)
+
+        #Submit button
+        button = QPushButton("Submit")
+        button.clicked.connect(self.add_student)
+        layout.addWidget(button)
+
+
+        self.setLayout(layout)
+
+
+    def add_student(self):
+        name = self.student_name.text()
+        course = self.course_name.itemText(self.course_name.currentIndex())
+        mobile = self.mobile.text()
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor() #adding
+        cursor.execute("INSERT INTO students (name, course, mobile) VALUES (?,?,?)",
+                       (name, course, mobile))
+
+        connection.commit() #Apply the sql statement
+        cursor.close()
+        connection.close()
+
+        student_mng.load_data()
+
+
 
 
 
